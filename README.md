@@ -175,10 +175,10 @@ python src/gradio_app.py --ckpt <path/to/checkpoint.ckpt> --config src/configs/d
 # 📜 Citation
 
 ```bibtex
-@article{vecchio2023matfuse,
+@inproceedings{vecchio2023matfuse,
   title={MatFuse: Controllable Material Generation with Diffusion Models},
   author={Vecchio, Giuseppe and Sortino, Renato and Palazzo, Simone and Spampinato, Concetto},
-  journal={arXiv preprint arXiv:2308.11408},
-  year={2023}
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  year={2024}
 }
 ```
