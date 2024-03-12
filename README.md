@@ -8,6 +8,9 @@
 
 </div>
 
+
+<img title="teaser image" alt="Teaser" src="./imgs/teaser.png"/>
+
 # 🔍 Overview
 
 The official PyTorch implementation for paper __"MatFuse: Controllable Material Generation with Diffusion Models"__.
