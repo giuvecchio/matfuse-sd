@@ -4,7 +4,9 @@
 
 [Giuseppe Vecchio](https://github.com/giuvecchio), [Renato Sortino](https://rensortino.github.io), [Simone Palazzo](https://github.com/simopal6) and [Concetto Spampinato](https://github.com/cspampin)
 
-[![Paper](http://img.shields.io/badge/paper-arxiv.2107.11298-B31B1B.svg)](https://arxiv.org/abs/2308.11408)
+[![arXiv](https://img.shields.io/badge/arXiv-_-darkgreen?style=flat-square&logo=arxiv)](https://arxiv.org/abs/2308.11408)
+[![Project page](https://img.shields.io/badge/🚀_Project_Page-_-darkgreen?style=flat-square)](https://gvecchio.com/matfuse/)
+[![cvf](https://img.shields.io/badge/CVPR_2024-_-darkgreen?style=flat-square)](https://cvpr.thecvf.com/Conferences/2024/AcceptedPapers#:~:text=MatFuse:%20Controllable%20Material%20Generation%20with%20Diffusion%20Models)
 
 </div>
 
