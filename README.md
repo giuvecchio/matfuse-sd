@@ -120,7 +120,7 @@ Data shouldbe split between `train` and `test` sets. Each material folder contai
 ⚠️ **Note:** To run a training, update the `data_root` property in the config file to point to the folder where you have your dataset stored.
 
 ### Processing the data
-We provide a script to extract the color palette from the renders under the `src/scripts/data` folder. Tu run it run:
+We provide a script to extract the color palette from the renders under the `src/scripts/data` folder. To run it run:
 ```shell
 python src/scripts/data/extract_palette.py --data <path/to/dataset>
 ```
@@ -160,6 +160,14 @@ To limit the number of visible GPUs use:
 
 ```shell
 CUDA_VISIBLE_DEVICES=<GPU_ID> python src/main.py ...
+```
+
+The experiments are automatically logged using [Weights and Biases](https://wandb.ai/site).
+To specify your own project space and project name set the following environment variables:
+
+```shell
+WANDB_PROJECT='{YOUR_PROJECT_NAME}'
+WANDB_ENTITY='{YOUR_PROJECT_SPACE_NAME}'
 ```
 
 # 🧪 Inference
