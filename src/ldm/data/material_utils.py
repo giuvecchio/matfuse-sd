@@ -5,8 +5,8 @@ import torch
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
 from PIL import Image
-from Pylette.color_extraction import k_means_extraction, median_cut_extraction
-from Pylette.palette import Palette
+from Pylette.src.color_extraction import k_means_extraction, median_cut_extraction
+from Pylette import Palette
 from torch.utils.data import Sampler
 
 def pack_maps(maps: dict) -> torch.Tensor:
