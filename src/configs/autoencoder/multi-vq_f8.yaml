@@ -14,7 +14,7 @@ model:
             disc_start: 50001
             disc_weight: 0.5
             n_classes: 4096
-    image_key: Packed
+    image_key: packed
     ddconfig:
       double_z: false
       z_channels: 256
@@ -34,11 +34,11 @@ model:
 data:
   target: main.DataModuleFromConfig
   params:
-    batch_size: 8
+    batch_size: 2
     num_workers: 0
     wrap: false
     train:
-      target: data.matfuse.MatFuseDataset
+      target: ldm.data.matfuse.MatFuseDataset
       params:
         data_root: sample_materials
         size: 256
@@ -48,7 +48,7 @@ data:
           - roughness
           - specular
     validation:
-      target: data.matfuse.MatFuseDataset
+      target: ldm.data.matfuse.MatFuseDataset
       params:
         data_root: sample_materials
         size: 256

@@ -7,9 +7,8 @@ model:
     num_timesteps_cond: 1
     log_every_t: 200
     timesteps: 1000
-    first_stage_key: Packed
+    first_stage_key: packed
     cond_stage_key: 
-      - render
       - image_embed
       - sketch
       - palette
@@ -20,10 +19,7 @@ model:
     conditioning_key: hybrid
     monitor: val/loss_simple_ema
 
-    ucg_training: 
-      render:
-        p: 0.5
-        val: 0.0
+    ucg_training:
       image_embed:
         p: 0.5
         val: 0.0
@@ -45,7 +41,7 @@ model:
       target: ldm.modules.diffusionmodules.openaimodel.UNetModel
       params:
         image_size: 32
-        in_channels: 20
+        in_channels: 16
         out_channels: 12
         model_channels: 256
         attention_resolutions:
@@ -124,7 +120,7 @@ data:
     num_workers: 0
     wrap: false
     train:
-      target: data.matfuse.MatFuseDataset
+      target: ldm.data.matfuse.MatFuseDataset
       params:
         data_root: sample_materials
         size: 256
@@ -134,7 +130,7 @@ data:
           - roughness
           - specular
     validation:
-      target: data.matfuse.MatFuseDataset
+      target: ldm.data.matfuse.MatFuseDataset
       params:
         data_root: sample_materials
         size: 256
