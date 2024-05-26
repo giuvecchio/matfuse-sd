@@ -8,6 +8,8 @@ import torchvision.transforms.functional as TF
 from einops import rearrange
 from PIL import Image
 from torch.utils.data import Dataset
+from Pylette import extract_colors
+
 
 
 class MatFuseDataset(Dataset):
@@ -54,6 +56,7 @@ class MatFuseDataset(Dataset):
         else:
             image = Image.open(src).convert("RGB")
             image = TF.resize(image, self.size, antialias=True)
+            image = TF.to_tensor(image)
             
         image = image * 2.0 - 1.0
         image = image.clamp(-1.0, 1.0)
@@ -76,8 +79,8 @@ class MatFuseDataset(Dataset):
         example["text"] = ", ".join(metadata["tags"])
 
         # load render
-        src = random.choice(list(folder.glob("renders/*.png")))
-        image = self.process_image(src, "render")
+        render_src = random.choice(list(folder.glob("renders/*.png")))
+        image = self.process_image(render_src, "render")
         example["image_embed"] = image
 
         # load maps
@@ -88,8 +91,11 @@ class MatFuseDataset(Dataset):
 
         # Parse color palette
         palette = metadata.get("palette", None)
-        if palette is not None:
-            example["palette"] = self.hex2rgb(palette)
+        if not palette:
+            palette = extract_colors(str(render_src), palette_size=5, sort_mode="frequency")
+            palette = [c.rgb for c in palette.colors]
+        # if palette is not None:
+        example["palette"] = self.to_rgb(palette)
 
         example["sketch"] = self.process_sketch(folder)
 
@@ -109,12 +115,16 @@ class MatFuseDataset(Dataset):
         else:
             return None
 
-    def hex2rgb(self, palette):
+    def to_rgb(self, palette):
         rgb_palette = []
-        for hex in palette:
-            if hex[0] == "#":
-                hex = hex[1:]
-            rgb = [int(hex[i : i + 2], 16) for i in (0, 2, 4)]
+        for color in palette:
+            if isinstance(color, str) and color[0] == "#":
+                color = color[1:]
+                rgb = [int(hex[i : i + 2], 16) for i in (0, 2, 4)]
+            elif (isinstance(color, list) or isinstance(color, tuple)) and len(color) == 3: # RGB format
+                rgb = color
+            else:
+                raise ValueError(f"Color format not recognized for {color}")
             rgb_palette.append(rgb)
         return torch.tensor(rgb_palette, dtype=torch.float32) / 255.0
 
