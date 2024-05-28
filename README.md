@@ -175,6 +175,8 @@ WANDB_ENTITY='{YOUR_PROJECT_SPACE_NAME}'
 To run inference on a trained model, run the `gradio_app.py` script specifying the path to the model checkpoint and the configuration. \
 This will open a web interface to perform conditional generation and material editing.
 
+⚠️ **Note:** For inference, at least 12GB of GPU VRAM are necessary.
+
 ```shell
 python src/gradio_app.py --ckpt <path/to/checkpoint.ckpt> --config src/configs/diffusion/<config.yaml>
 ```
