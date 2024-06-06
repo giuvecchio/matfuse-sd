@@ -403,16 +403,21 @@ class ImageLogger(Callback):
 
     @rank_zero_only
     def _wandb(self, pl_module, images, batch_idx, split):
-        conditions = images.pop("conditions")
-        wandb.log(
-            {"conditions": wandb.Image(conditions), "epoch": pl_module.current_epoch}
-        )
+        if "conditions" in images:
+            conditions = images.pop("conditions")
+            wandb.log(
+                {"conditions": wandb.Image(conditions), "epoch": pl_module.current_epoch}
+            )
 
         for k in images:
             if images[k].shape[1] == 12:
                 maps = unpack_maps(((images[k] + 1) / 2).clamp(0, 1))
                 plot = make_plot_maps(maps)
-                image_chunks = torch.chunk(plot, len(plot) // 4, dim=0)
+                if len(plot) > 4:
+                    image_chunks = torch.chunk(plot, len(plot) // 4, dim=0)
+                else: 
+                    image_chunks = [plot]
+                    
                 grids = [
                     torchvision.utils.make_grid(plots, nrow=2, padding=20)
                     for plots in image_chunks
@@ -465,48 +470,48 @@ class ImageLogger(Callback):
 
     def log_img(self, pl_module, batch, batch_idx, split="train", cond=None):
         check_idx = batch_idx if self.log_on_batch_idx else pl_module.global_step
-        if (
-            self.check_frequency(check_idx)
-            and hasattr(pl_module, "log_images")  # batch_idx % self.batch_freq == 0
-            and callable(pl_module.log_images)
-            and batch_idx > 5
-            and self.max_images > 0
-        ):
-            logger = type(pl_module.logger)
+        # if ( Restore
+        #     self.check_frequency(check_idx)
+        #     and hasattr(pl_module, "log_images")  # batch_idx % self.batch_freq == 0
+        #     and callable(pl_module.log_images)
+        #     and batch_idx > 5
+        #     and self.max_images > 0
+        # ):
+        logger = type(pl_module.logger)
 
-            is_train = pl_module.training
-            if is_train:
-                pl_module.eval()
+        is_train = pl_module.training
+        if is_train:
+            pl_module.eval()
 
-            with torch.no_grad():
-                images = pl_module.log_images(
-                    batch, split=split, cond=cond, **self.log_images_kwargs
-                )
-
-            for k in images:
-                N = min(images[k].shape[0], self.max_images)
-                images[k] = images[k][:N]
-                if isinstance(images[k], torch.Tensor):
-                    images[k] = images[k].detach().cpu()
-                    if self.clamp:
-                        images[k] = torch.clamp(images[k], -1.0, 1.0)
-
-            self.log_local(
-                pl_module.logger.save_dir,
-                split,
-                images,
-                pl_module.global_step,
-                pl_module.current_epoch,
-                batch_idx,
+        with torch.no_grad():
+            images = pl_module.log_images(
+                batch, split=split, cond=cond, **self.log_images_kwargs
             )
 
-            logger_log_images = self.logger_log_images.get(
-                logger, lambda *args, **kwargs: None
-            )
-            logger_log_images(pl_module, images, pl_module.global_step, split)
+        for k in images:
+            N = min(images[k].shape[0], self.max_images)
+            images[k] = images[k][:N]
+            if isinstance(images[k], torch.Tensor):
+                images[k] = images[k].detach().cpu()
+                if self.clamp:
+                    images[k] = torch.clamp(images[k], -1.0, 1.0)
 
-            if is_train:
-                pl_module.train()
+        self.log_local(
+            pl_module.logger.save_dir,
+            split,
+            images,
+            pl_module.global_step,
+            pl_module.current_epoch,
+            batch_idx,
+        )
+
+        logger_log_images = self.logger_log_images.get(
+            logger, lambda *args, **kwargs: None
+        )
+        logger_log_images(pl_module, images, pl_module.global_step, split)
+
+        if is_train:
+            pl_module.train()
 
     def check_frequency(self, check_idx):
         if ((check_idx % self.batch_freq) == 0 or (check_idx in self.log_steps)) and (
@@ -757,7 +762,7 @@ if __name__ == "__main__":
         },
         "image_logger": {
             "target": "main.ImageLogger",
-            "params": {"batch_frequency": 10, "max_images": 4, "clamp": True},
+            "params": {"batch_frequency": 2, "max_images": 4, "clamp": True},
         },
         "learning_rate_logger": {
             "target": "main.LearningRateMonitor",

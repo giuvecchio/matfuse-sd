@@ -292,11 +292,6 @@ class VQModel(pl.LightningModule):
             log["inputs"] = x
             return log
         xrec, _ = self(x)
-        if x.shape[1] > 3:
-            # colorize with random projection
-            assert xrec.shape[1] > 3
-            x = self.to_rgb(x)
-            xrec = self.to_rgb(xrec)
         log["inputs"] = x
         log["reconstructions"] = xrec
         if plot_ema:
@@ -454,7 +449,7 @@ class VQModelMulti(VQModel):
         dec = self.decoder(quant)
         return dec
 
-    def forward(self, input, return_pred_indices):
+    def forward(self, input, return_pred_indices=False):
         h = self.encode_to_prequant(input)
         quant, diff, ind = self.quantize(h)
         dec = self.decode(quant)
