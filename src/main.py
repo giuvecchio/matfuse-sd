@@ -700,7 +700,6 @@ if __name__ == "__main__":
             "target": "pytorch_lightning.loggers.WandbLogger",
             "params": {
                 "name": nowname,
-                "entity": "matereal-diffuser",
                 "project": "matfuse",
                 "save_dir": logdir,
                 "offline": opt.debug,
