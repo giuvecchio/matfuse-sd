@@ -1,18 +1,19 @@
 import argparse
 import random
-from contextlib import contextmanager, nullcontext
+from contextlib import nullcontext
 
 import cv2
 import einops
 import numpy as np
 import torch
 import torch.nn.functional as F
-from ldm.data.material_utils import *
-from ldm.util import load_model_from_config, visualize_palette
 from omegaconf import OmegaConf
 from PIL import Image
 from pytorch_lightning import seed_everything
 from torchvision.transforms.functional import center_crop, to_tensor
+
+from ldm.data.material_utils import *
+from ldm.util import load_model_from_config, visualize_palette
 
 parser = argparse.ArgumentParser(description="MatFuse")
 parser.add_argument("--ckpt", type=str, help="Path to the MatFuse model")
@@ -200,7 +201,6 @@ def generate(
 
 @torch.no_grad()
 def run_generation(
-    render,
     render_emb,
     palette_source,
     sketch,

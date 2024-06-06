@@ -2,7 +2,7 @@ from pathlib import Path
 
 import gradio as gr
 
-from src.utils.inference_helpers import *
+from utils.inference_helpers import *
 
 block = gr.Blocks().queue()
 with block:
@@ -12,17 +12,10 @@ with block:
             gr.Markdown("## Multi-Conditional Generation")
         with gr.Row():
             with gr.Column():
-                input_image = gr.Image(
-                    source="upload", type="pil", label="Render", shape=(1024, 1024)
-                )
-                gr.Examples(
-                    [[x] for x in list(Path("sample_materials").glob("**/render.png"))],
-                    inputs=input_image,
-                )
                 input_image_emb = gr.Image(
                     source="upload",
                     type="pil",
-                    label="Render Embed",
+                    label="Image",
                     shape=(1024, 1024),
                 )
                 gr.Examples(
@@ -97,7 +90,7 @@ with block:
                     label="Output", show_label=False, elem_id="gallery"
                 ).style(grid=2, height="auto")
                 gr.Markdown("###### Output Format: Sketch, Palette, Maps")
-        conditions = [input_image, input_image_emb, input_image_palette, sketch, prompt]
+        conditions = [input_image_emb, input_image_palette, sketch, prompt]
         args = [num_samples, image_resolution, ddim_steps, seed, eta, guidance_scale]
         ips = [*conditions, *args]
         run_button.click(fn=run_generation, inputs=ips, outputs=[result_gallery])
