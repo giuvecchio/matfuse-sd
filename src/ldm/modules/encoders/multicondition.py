@@ -9,11 +9,19 @@ class ZeroEmbedder(nn.Module):
     Dummy embedder that returns a zero tensor, to exclude conditions without breaking the code
     """
 
-    def __init__(self):
+    def __init__(self, cond_type, out_ch, latent_size):
         super().__init__()
+        self.cond_type = cond_type
+        self.out_ch = out_ch
+        self.latent_size = latent_size
 
     def forward(self, x):
-        return torch.zeros_like(x)
+        bs = x.shape[0]
+        if self.cond_type == "local":
+            shape = [bs, self.out_ch, self.latent_size, self.latent_size]
+        if self.cond_type == "global":
+            shape = [bs, self.out_ch]
+        return torch.zeros(shape, device=x.device)
 
 
 class PaletteEncoder(nn.Module):
@@ -41,26 +49,10 @@ class MultiConditionEncoder(nn.Module):
     ):
         super().__init__()
         print(f"Conditional model: Multiconditional")
-        self.image_embed = (
-            instantiate_from_config(image_embed_config)
-            if image_embed_config
-            else ZeroEmbedder()
-        )
-        self.text_embed = (
-            instantiate_from_config(text_embed_config)
-            if text_embed_config
-            else ZeroEmbedder()
-        )
-        self.sketch_encoder = (
-            instantiate_from_config(binary_encoder_config)
-            if binary_encoder_config
-            else ZeroEmbedder()
-        )
-        self.palette_encoder = (
-            instantiate_from_config(palette_proj_config)
-            if palette_proj_config
-            else ZeroEmbedder()
-        )
+        self.image_embed = instantiate_from_config(image_embed_config)
+        self.text_embed = instantiate_from_config(text_embed_config)
+        self.sketch_encoder = instantiate_from_config(binary_encoder_config)
+        self.palette_encoder = instantiate_from_config(palette_proj_config)
 
         self.encoders = {
             "image_embed": self.image_embed,
@@ -80,9 +72,8 @@ class MultiConditionEncoder(nn.Module):
             yield param
 
     def _get_params(self, trainable_only=False):
-        params = (
-            list(self.sketch_encoder.parameters())
-            + list(self.palette_encoder.parameters())
+        params = list(self.sketch_encoder.parameters()) + list(
+            self.palette_encoder.parameters()
         )
         if not trainable_only:
             params += list(self.text_embed.parameters())
