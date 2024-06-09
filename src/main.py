@@ -399,8 +399,6 @@ class ImageLogger(Callback):
         self.log_images_kwargs = log_images_kwargs if log_images_kwargs else {}
         self.log_first_step = log_first_step
 
-        wandb.init(project=os.environ.get("WANDB_PROJECT", "matfuse"), entity=os.environ.get("WANDB_ENTITY"))
-
     @rank_zero_only
     def _wandb(self, pl_module, images, batch_idx, split):
         if "conditions" in images:
@@ -613,7 +611,8 @@ if __name__ == "__main__":
     #           target: importpath
     #           params:
     #               key: value
-
+    wandb.init(project=os.environ.get("WANDB_PROJECT", "matfuse"), entity=os.environ.get("WANDB_ENTITY"))
+    
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
     # add cwd for convenience and to make classes in this file available when
