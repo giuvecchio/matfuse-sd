@@ -71,10 +71,8 @@ This is assuming you have navigated to the `matfuse-sd` root after cloning it.
 
 ```shell
 # create environment (can use venv instead of conda)
-conda create -n sdiff python==3.10.13
-conda activate sdiff
-# install pytorch with cuda
-conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.7 -c pytorch -c nvidia
+conda create -n matfuse python==3.10.13
+conda activate matfuse
 # install required packages
 pip install -r requirements.txt
 ```
