@@ -136,8 +136,10 @@ python src/main.py --base src/configs/autoencoder/multi-vq_f8.yaml --train --gpu
 
 ## Training the LDM
 
-In `src/configs/diffusion/` we provide configs for training the MatFuse LDMs. Training can be started by running
+In `src/configs/diffusion/` we provide configs for training the MatFuse LDMs. \
+⚠️ **Before moving on to the next step** update the `ckpt_path` under `first_stage_config` in the `matfuse-ldm-vq_f8.yaml` to point to your vq-vae checkpoint.
 
+Training can be started by running
 ```shell
 python src/main.py --base src/configs/diffusion/matfuse-ldm-vq_f8.yaml --train --gpus 0,
 ```

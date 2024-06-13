@@ -70,7 +70,7 @@ model:
       params:
         embed_dim: 3
         n_embed: 4096
-        ckpt_path: weights/vqgan/vq-gan-f8-mix-840.pt
+        # ckpt_path: weights/autoencoder/vq-vae-f8.pt  # NOTE: uncomment and replace with path to the VQ-VAE checkpoint when training
         ddconfig:
           double_z: false
           z_channels: 256
