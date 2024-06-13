@@ -7,6 +7,7 @@
 [![arXiv](https://img.shields.io/badge/arXiv-_-darkgreen?style=flat-square&logo=arxiv)](https://arxiv.org/abs/2308.11408)
 [![Project page](https://img.shields.io/badge/🚀_Project_Page-_-darkgreen?style=flat-square)](https://gvecchio.com/matfuse/)
 [![cvf](https://img.shields.io/badge/CVPR_2024-_-darkgreen?style=flat-square)](https://cvpr.thecvf.com/Conferences/2024/AcceptedPapers#:~:text=MatFuse:%20Controllable%20Material%20Generation%20with%20Diffusion%20Models)
+[![huggingface](https://img.shields.io/badge/🤗_Weights-_-darkgreen?style=flat-square)](https://huggingface.co/gvecchio/MatFuse)
 
 </div>
 
@@ -48,9 +49,6 @@ The most relevant changes are:
 - a new multi-encoder vq-vae architecture which processes each material map (diffuse, normal, roughness and specular) independently, learning a disentangled latent representation. 
 - a new a _VQMaterialLoss_ which combines the original _VQLPIPSWithDiscriminator_ with a rendering loss.
 - multi-condition fusion mechanism.
-
-### ⚠️ Notes
-We're releasing the full source used to train MatFuse and running inference. Trained weights _might_ come in the future, but we have no plans of releasing them at the moment.
 
 MatFuse is trained on a combination of the dataset by Deschaintre et al. (2018) and materials from the [PolyHeaven](https://polyhaven.com/) library. We do not plan to release such dataset as it can be easily collected. Anyway, if you plan to train your own MatFuse, we strongly recomend using the recently released dataset **[MatSynth](https://gvecchio.com/matsynth)** which contains a wider variety of high-resolution materials and annotations.
 
@@ -175,7 +173,9 @@ WANDB_ENTITY='{YOUR_PROJECT_SPACE_NAME}'
 To run inference on a trained model, run the `gradio_app.py` script specifying the path to the model checkpoint and the configuration. \
 This will open a web interface to perform conditional generation and material editing.
 
-⚠️ **Note:** For inference, at least 12GB of GPU VRAM are necessary.
+### ⚠️ Notes
+- For inference, at least 12GB of GPU VRAM are necessary.
+- Weights are available at [huggingface.co/gvecchio/MatFuse](https://huggingface.co/gvecchio/MatFuse). We provide both ema only weights (pruned) and full weights. The gradio app expects the full weights to be provided.
 
 ```shell
 python src/gradio_app.py --ckpt <path/to/checkpoint.ckpt> --config src/configs/diffusion/<config.yaml>
@@ -190,10 +190,12 @@ python src/gradio_app.py --ckpt <path/to/checkpoint.ckpt> --config src/configs/d
 # 📜 Citation
 
 ```bibtex
-@inproceedings{vecchio2023matfuse,
-  title={MatFuse: Controllable Material Generation with Diffusion Models},
-  author={Vecchio, Giuseppe and Sortino, Renato and Palazzo, Simone and Spampinato, Concetto},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  year={2024}
+@inproceedings{vecchio2024matfuse,
+  author    = {Vecchio, Giuseppe and Sortino, Renato and Palazzo, Simone and Spampinato, Concetto},
+  title     = {MatFuse: Controllable Material Generation with Diffusion Models},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  month     = {June},
+  year      = {2024},
+  pages     = {4429-4438}
 }
 ```
