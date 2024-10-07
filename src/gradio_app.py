@@ -13,31 +13,25 @@ with block:
         with gr.Row():
             with gr.Column():
                 input_image_emb = gr.Image(
-                    source="upload",
                     type="pil",
                     label="Image",
-                    shape=(1024, 1024),
                 )
                 gr.Examples(
                     [[x] for x in list(Path("sample_materials").glob("**/render.png"))],
                     inputs=input_image_emb,
                 )
                 input_image_palette = gr.Image(
-                    source="upload",
                     type="pil",
                     label="Render Palette",
-                    shape=(1024, 1024),
                 )
                 gr.Examples(
                     [[x] for x in list(Path("sample_materials").glob("**/render.png"))],
                     inputs=input_image_palette,
                 )
                 sketch = gr.Image(  # TODO Change with taking the sketch from an image using Canny
-                    source="upload",
                     type="numpy",
                     label="Sketch",
                     image_mode="L",
-                    shape=(256, 256),
                 )
                 gr.Examples(
                     [[x] for x in list(Path("sample_materials").glob("**/sketch.png"))],
@@ -54,7 +48,7 @@ with block:
                     ],
                     inputs=prompt,
                 )
-                run_button = gr.Button(label="Run")
+                run_button = gr.Button(value="Run")
                 with gr.Accordion("Advanced options", open=False):
                     num_samples = gr.Slider(
                         label="Images", minimum=1, maximum=12, value=1, step=1
@@ -88,7 +82,7 @@ with block:
 
                 result_gallery = gr.Gallery(
                     label="Output", show_label=False, elem_id="gallery"
-                ).style(grid=2, height="auto")
+                )
                 gr.Markdown("###### Output Format: Sketch, Palette, Maps")
         conditions = [input_image_emb, input_image_palette, sketch, prompt]
         args = [num_samples, image_resolution, ddim_steps, seed, eta, guidance_scale]
@@ -101,19 +95,19 @@ with block:
             with gr.Column(scale=2, elem_id="input"):
                 gr.Markdown("## Input Maps")
                 with gr.Row(elem_id="diff_rough"):
-                    diff_map = gr.Image(
-                        source="upload", type="pil", label="Diffuse", tool="sketch"
+                    diff_map = gr.ImageEditor(
+                        sources=["upload"], type="pil", label="Diffuse"
                     )
-                    rough_map = gr.Image(
-                        source="upload", type="pil", label="Roughness", tool="sketch"
+                    rough_map = gr.ImageEditor(
+                        sources=["upload"], type="pil", label="Roughness"
                     )
                 with gr.Row(elem_id="mask_diff_rough"):
-                    mask_diff = gr.Checkbox(label="Mask Diffuse", default=False)
-                    mask_rough = gr.Checkbox(label="Mask Roughness", default=False)
+                    mask_diff = gr.Checkbox(label="Mask Diffuse", value=False)
+                    mask_rough = gr.Checkbox(label="Mask Roughness", value=False)
                 with gr.Row(elem_id="examples_diff_rough"):
                     gr.Examples(
                         [
-                            [x]
+                            x.as_posix()
                             for x in list(
                                 Path("sample_materials").glob("**/diffuse.png")
                             )
@@ -122,7 +116,7 @@ with block:
                     )
                     gr.Examples(
                         [
-                            [x]
+                            x.as_posix()
                             for x in list(
                                 Path("sample_materials").glob("**/roughness.png")
                             )
@@ -130,19 +124,19 @@ with block:
                         inputs=rough_map,
                     )
                 with gr.Row(elem_id="norm_spec"):
-                    norm_map = gr.Image(
-                        source="upload", type="pil", label="normal", tool="sketch"
+                    norm_map = gr.ImageEditor(
+                        sources=["upload"], type="pil", label="normal"
                     )
-                    spec_map = gr.Image(
-                        source="upload", type="pil", label="specular", tool="sketch"
+                    spec_map = gr.ImageEditor(
+                        sources=["upload"], type="pil", label="specular",
                     )
                 with gr.Row(elem_id="mask_norm_spec"):
-                    mask_norm = gr.Checkbox(label="Mask normal", default=False)
-                    mask_spec = gr.Checkbox(label="Mask specular", default=False)
+                    mask_norm = gr.Checkbox(label="Mask normal", value=False)
+                    mask_spec = gr.Checkbox(label="Mask specular", value=False)
                 with gr.Row(elem_id="examples_norm_spec"):
                     gr.Examples(
                         [
-                            [x]
+                            x.as_posix()
                             for x in list(
                                 Path("sample_materials").glob("**/normal.png")
                             )
@@ -151,7 +145,7 @@ with block:
                     )
                     gr.Examples(
                         [
-                            [x]
+                            x.as_posix()
                             for x in list(
                                 Path("sample_materials").glob("**/specular.png")
                             )
@@ -162,16 +156,12 @@ with block:
                 gr.Markdown("## Input Conditions")
                 with gr.Row(elem_id="conditions"):
                     input_image_palette = gr.Image(
-                        source="upload",
                         type="pil",
                         label="Render Palette",
-                        shape=(1024, 1024),
                     )
                     input_image_embed = gr.Image(
-                        source="upload",
                         type="pil",
                         label="Render Embed",
-                        shape=(1024, 1024),
                     )
                 with gr.Row(elem_id="examples_conditions"):
                     gr.Examples(
@@ -224,7 +214,7 @@ with block:
                         randomize=True,
                     )
                     eta = gr.Number(label="eta (DDIM)", value=0.0)
-                run_button = gr.Button(label="Run")
+                run_button = gr.Button(value="Run")
 
             with gr.Column(elem_id="output"):
                 gr.Markdown("## Output")

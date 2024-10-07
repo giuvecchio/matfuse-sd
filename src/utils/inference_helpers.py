@@ -68,10 +68,13 @@ def get_mask(mask, mask_all, latent_shape):
     # We invert zeros and ones for each mask if we use the mask from the sketch since gradio reads them inverted
     if mask_all or mask is None:
         return torch.zeros(latent_shape)
-    mask = 1 - to_tensor(mask.resize(latent_shape[1:]))
-    mask[mask < 0.5] = 0
-    mask[mask >= 0.5] = 1
-    return mask
+    mask = mask[0].convert("L") # NOTE We take only the first layer of the gradio image editor
+    # mask = 1 - to_tensor(mask.resize(latent_shape[1:]))
+    mask = np.array(mask.resize(latent_shape[1:]))
+    mask[mask > 0] = 1
+    mask = torch.tensor(mask)
+    mask = mask.repeat(3,1,1)
+    return 1 - mask
 
 
 @torch.no_grad()
@@ -156,7 +159,7 @@ def generate(
                 image_size=latent_shape[-1],
                 reduce_memory=True,
             )
-            samples = F.pad(samples, (7, 7, 7, 7), mode="circular")
+            samples_cfg = F.pad(samples_cfg, (7, 7, 7, 7), mode="circular")
             x_samples_cfg = model.decode_first_stage(samples_cfg)
             x_samples_cfg = center_crop(
                 x_samples_cfg, (image_resolution, image_resolution)
@@ -267,16 +270,16 @@ def run_editing(
 ):
 
     diff_map = process_image(
-        diff["image"] if diff is not None else None, image_resolution, model.device
+        diff["background"] if diff is not None else None, image_resolution, model.device
     )
     norm_map = process_image(
-        norm["image"] if norm is not None else None, image_resolution, model.device
+        norm["background"] if norm is not None else None, image_resolution, model.device
     )
     rough_map = process_image(
-        rough["image"] if rough is not None else None, image_resolution, model.device
+        rough["background"] if rough is not None else None, image_resolution, model.device
     )
     spec_map = process_image(
-        spec["image"] if spec is not None else None, image_resolution, model.device
+        spec["background"] if spec is not None else None, image_resolution, model.device
     )
 
     packed_maps = pack_maps(
@@ -311,16 +314,16 @@ def run_editing(
     mask = pack_maps(
         {
             "Diffuse": get_mask(
-                diff["mask"] if diff is not None else None, mask_diff, latent_shape
+                diff["layers"] if diff is not None else None, mask_diff, latent_shape
             ),
             "Normal": get_mask(
-                norm["mask"] if norm is not None else None, mask_norm, latent_shape
+                norm["layers"] if norm is not None else None, mask_norm, latent_shape
             ),
             "Roughness": get_mask(
-                rough["mask"] if rough is not None else None, mask_rough, latent_shape
+                rough["layers"] if rough is not None else None, mask_rough, latent_shape
             ),
             "Specular": get_mask(
-                spec["mask"] if spec is not None else None, mask_spec, latent_shape
+                spec["layers"] if spec is not None else None, mask_spec, latent_shape
             ),
         }
     )
