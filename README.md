@@ -261,13 +261,13 @@ A self-contained example script is provided at the repository root:
 
 ```shell
 # Text-conditioned
-python example_generate.py --checkpoint ckpt_pruned --text "brick wall" --output output
+python .\src\scripts\run_diffusers_inference.py --model_path ckpt_pruned --prompt "brick wall" --output_dir .\results\
 
 # Image-conditioned
-python example_generate.py --checkpoint ckpt_pruned --image reference.png --output output
+python .\src\scripts\run_diffusers_inference.py --model_path ckpt_pruned --image reference.png --output_dir .\results\
 
 # Unconditional
-python example_generate.py --checkpoint ckpt_pruned --output output --seed 123
+python .\src\scripts\run_diffusers_inference.py --model_path ckpt_pruned --output_dir .\results\ --seed 123
 ```
 
 ## Architecture Details
