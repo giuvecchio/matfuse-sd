@@ -52,7 +52,7 @@ def main():
     parser.add_argument(
         "--guidance_scale",
         type=float,
-        default=7.5,
+        default=4.0,
         help="Classifier-free guidance scale",
     )
     parser.add_argument(
@@ -61,59 +61,19 @@ def main():
         default=None,
         help="Random seed for reproducibility",
     )
-    parser.add_argument(
-        "--height",
-        type=int,
-        default=512,
-        help="Output image height",
-    )
-    parser.add_argument(
-        "--width",
-        type=int,
-        default=512,
-        help="Output image width",
-    )
 
     args = parser.parse_args()
 
-    # Import here to allow help without dependencies
+    # Import here to allow --help without heavy dependencies
     import sys
 
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
-    from diffusers import UNet2DConditionModel, DDIMScheduler
-    from diffusers_pipeline import (
-        MatFusePipeline,
-        MatFuseVQModel,
-        MultiConditionEncoder,
-    )
+    from diffusers_pipeline.pipeline_matfuse import MatFusePipeline
 
     print("Loading pipeline...")
 
-    # Resolve model path to absolute path
-    model_path = Path(args.model_path).resolve()
-
-    # Load components (use local_files_only to prevent HuggingFace Hub lookups)
-    # UNet uses standard diffusers model
-    unet = UNet2DConditionModel.from_pretrained(
-        model_path / "unet", local_files_only=True
-    )
-    # VAE uses custom model (4 separate encoders/quantizers)
-    vae = MatFuseVQModel.from_pretrained(model_path / "vae", local_files_only=True)
-    scheduler = DDIMScheduler.from_pretrained(
-        model_path / "scheduler", local_files_only=True
-    )
-    condition_encoder = MultiConditionEncoder.from_pretrained(
-        model_path / "condition_encoder", local_files_only=True
-    )
-
-    # Create pipeline
-    pipe = MatFusePipeline(
-        unet=unet,
-        vae=vae,
-        scheduler=scheduler,
-        condition_encoder=condition_encoder,
-    )
+    pipe = MatFusePipeline.from_pretrained(str(Path(args.model_path).resolve()))
 
     # Move to GPU if available
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -143,8 +103,6 @@ def main():
         image=image,
         text=args.prompt,
         sketch=sketch,
-        height=args.height,
-        width=args.width,
         num_inference_steps=args.num_inference_steps,
         guidance_scale=args.guidance_scale,
         generator=generator,
@@ -154,18 +112,9 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Save each material map
-    for i, diffuse in enumerate(output["diffuse"]):
-        diffuse.save(output_dir / f"diffuse_{i}.png")
-
-    for i, normal in enumerate(output["normal"]):
-        normal.save(output_dir / f"normal_{i}.png")
-
-    for i, roughness in enumerate(output["roughness"]):
-        roughness.save(output_dir / f"roughness_{i}.png")
-
-    for i, specular in enumerate(output["specular"]):
-        specular.save(output_dir / f"specular_{i}.png")
+    for name in ("diffuse", "normal", "roughness", "specular"):
+        for i, img in enumerate(output[name]):
+            img.save(output_dir / f"{name}_{i}.png")
 
     print(f"Materials saved to {output_dir}")
 
