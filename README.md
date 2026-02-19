@@ -185,7 +185,101 @@ python src/gradio_app.py --ckpt <path/to/checkpoint.ckpt> --config src/configs/d
   <img src="./imgs/gradio_generate.png" style="max-width: 49%; border-radius: 10px"/> <img src="./imgs/gradio_edit.png" style="max-width: 49%; border-radius: 10px"/>
 </div>
 
-####
+# 🤗 Diffusers Integration
+
+MatFuse can be converted to the [diffusers](https://github.com/huggingface/diffusers) library format for easier integration into existing pipelines.
+
+## Converting Weights
+
+Convert the original checkpoint to diffusers format with the provided script:
+
+```shell
+python src/scripts/convert_to_diffusers.py \
+    --checkpoint checkpoints/matfuse-pruned.ckpt \
+    --output ckpt_pruned
+```
+
+This creates the following directory structure:
+- `ckpt_pruned/unet/` — Standard diffusers `UNet2DConditionModel`
+- `ckpt_pruned/vae/` — Custom `MatFuseVQModel` (4 independent encoders & VQ quantizers)
+- `ckpt_pruned/scheduler/` — `DDIMScheduler` configuration
+- `ckpt_pruned/condition_encoder/` — `MultiConditionEncoder` (CLIP, sentence-transformers, palette MLP, sketch CNN)
+- `ckpt_pruned/model_index.json` — Pipeline metadata
+
+## Using the Pipeline
+
+The easiest way to run inference is through `MatFusePipeline`, which handles conditioning, classifier-free guidance, and decoding automatically:
+
+```python
+import sys
+sys.path.insert(0, "src")
+
+import torch
+from diffusers_pipeline.pipeline_matfuse import MatFusePipeline
+
+pipe = MatFusePipeline.from_pretrained("ckpt_pruned")
+pipe = pipe.to("cuda")
+
+# Text-conditioned generation
+result = pipe(
+    text="red brick wall",
+    num_inference_steps=50,
+    guidance_scale=4.0,
+    generator=torch.Generator("cuda").manual_seed(42),
+)
+
+# result is a dict with keys: "diffuse", "normal", "roughness", "specular"
+# Each value is a list of PIL Images (one per batch item)
+result["diffuse"][0].save("diffuse.png")
+result["normal"][0].save("normal.png")
+result["roughness"][0].save("roughness.png")
+result["specular"][0].save("specular.png")
+```
+
+### Multiple Conditioning Inputs
+
+Conditions can be freely combined — the model was trained with composable conditioning:
+
+```python
+from PIL import Image
+
+result = pipe(
+    image=Image.open("reference.png"),          # CLIP image embedding
+    text="rough stone texture",                  # Sentence-transformers text embedding
+    palette=[(120, 80, 60), (90, 60, 40),        # Color palette (up to 5 RGB tuples)
+             (150, 110, 80), (70, 50, 30),
+             (180, 140, 100)],
+    sketch=Image.open("edges.png"),              # Binary edge map (concatenated with latent)
+    num_inference_steps=50,
+    guidance_scale=4.0,
+)
+```
+
+### Example Script
+
+A self-contained example script is provided at the repository root:
+
+```shell
+# Text-conditioned
+python example_generate.py --checkpoint ckpt_pruned --text "brick wall" --output output
+
+# Image-conditioned
+python example_generate.py --checkpoint ckpt_pruned --image reference.png --output output
+
+# Unconditional
+python example_generate.py --checkpoint ckpt_pruned --output output --seed 123
+```
+
+## Architecture Details
+
+| Component | Class | Notes |
+|-----------|-------|-------|
+| **UNet** | `diffusers.UNet2DConditionModel` | `in_channels=16` (12 latent + 4 sketch), `out_channels=12`, `cross_attention_dim=512`, `block_out_channels=[256, 512, 1024]` |
+| **VAE** | `MatFuseVQModel` (custom) | 4 separate encoders/quantizers (one per map), shared decoder, `n_embed=4096`, `embed_dim=3`, `f=8` |
+| **Scheduler** | `DDIMScheduler` | `beta_start=0.0015`, `beta_end=0.0195`, `scaled_linear`, 1000 training timesteps, ε-prediction |
+| **Conditioning** | `MultiConditionEncoder` (custom) | CLIP ViT-B/16 (images) · sentence-transformers (text) · MLP (palette) · CNN (sketch) |
+
+The custom `MatFuseVQModel` is required because the standard diffusers `VQModel` does not support multiple independent encoders. Similarly, `MultiConditionEncoder` handles the multi-modal conditioning fusion, including proper unconditional embedding generation for classifier-free guidance (encoded placeholders, not zero tensors).
 
 # 📜 Citation
 
